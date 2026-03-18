@@ -2,7 +2,7 @@
 
 local ucl = require('ucl')
 
-local tar_xz = 'XZ_OPTS=--threads=0 tar -cvJf '
+local tar_xz = 'XZ_OPTS=--threads=0 tar cvJf'
 
 local repeat_opt = function (opt, table)
 	local s = ' '
@@ -16,24 +16,24 @@ local src = function (path)
 	if path == nil then path = '/usr/src' end
 	local exclude = {'.svn', '.zfs', '.git', '@', 'release/dist', 'release/obj'}
 	local rep = repeat_opt('--exclude', exclude)
-	return 0 == os.execute(tar_xz..'-L src.txz'..rep..path)
+	return 0 == os.execute(tar_xz..'L src.txz'..rep..path)
 end
 
 local tests = function (path)
 	if path == nil then path = '/usr/tests' end
-	return 0 == os.execute(tar_xz..'-L tests.txz '..path)
+	return 0 == os.execute(tar_xz..'L tests.txz '..path)
 end
 
 local ports = function (path)
 	if path == nil then path = '/usr/ports' end
 	local exclude = {'.svn', '.git', 'distfiles', 'packages', 'INDEX*', 'work'}
 	local rep = repeat_opt('--exclude', exclude)
-	return 0 == os.execute(tar_xz..'-L ports.txz'..cmd..path)
+	return 0 == os.execute(tar_xz..'L ports.txz'..cmd..path)
 end
 
 local kernel = function (path)
 	if path == nil then path = '/boot/kernel' end
-	return 0 == os.execute(tar_xz..'kernel.txz --exclude *.debug '..path)
+	return 0 == os.execute(tar_xz..' kernel.txz --exclude *.debug '..path)
 end
 
 local base = function (path)
@@ -43,14 +43,16 @@ local base = function (path)
 		'/mnt', '/net', '/proc', '/rescue', '/root', '/sbin', '/tmp', '/usr', '/var'
 	}
 	local exclude = {
-		'/dev/*', '/dev/.*', '/media/*', '/media/.*', '/mnt/*', '/mnt/.*', '/net/*',
-		'/net/.*', '/proc/*', '/proc/.*', '/tmp/*', '/tmp/.*', '/usr/src/*',
-		'/usr/src/.*', '/usr/obj/*', '/usr/obj/.*','/usr/lib32/*', '/usr/lib32/.*',
-		'/usr/local/*', '/usr/local/.*', '/var/[!y]*/*', '/var/y[!p]*/*' -- don't exclude contents of /var/yp 
+		'dev/?*', 'dev/.?*', 'media/?*', 'media/.?*', 'mnt/?*', 'mnt/.?*', 'net/?*',
+		'net/.?*', 'proc/?*', 'proc/.?*', 'tmp/?*', 'tmp/.?*', 'usr/src/?*',
+		'usr/src/.?*', 'usr/obj/?*', 'usr/obj/.?*','usr/lib32/?*', 'usr/lib32/.?*',
+		'usr/local/?*', 'usr/local/.?*', 'var/[!y]*/?*', 'var/y[!p]*/?*' -- don't exclude contents of /var/yp 
 	}
 	local inc_opts = repeat_opt('--include', include)
 	local exc_opts = repeat_opt('--exclude', exclude)
-	return 0 == os.execute(tar_xz..'base.txz'..inc_opts..exc_opts..path)
+	local cmd = tar_xz..' base.txz'..inc_opts..exc_opts..path..'*'
+	print(cmd)
+	print(os.execute(cmd))
 end
 
 assert(#arg == 1 or #arg == 2, 'Expected 1-2 arguments, got '..tostring(#arg))
