@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# usage: ./pkgdist.sh <file>|src|tests|ports|kernel|base
+
 tar_xz="tar -cvJf"
 code=0
 input_name="$1"
@@ -65,8 +67,9 @@ case $input_name in
 		code=$?
 		rm "$temp"
 		;;
-	# TODO: dbg variants
 	*)
+		# code that would install the pkg to a temp folder and package that
+		# currently does not work
 		: '
 		tempdir=$(mktemp -d) || exit 1
 		pkg -o INSTALL_AS_USER=true --rootdir "${tempdir}" install "$input_name"
@@ -91,12 +94,12 @@ case $input_name in
 			mv .* ".$prefix"
 		fi
 		rm +MANIFEST +COMPACT_MANIFEST
-		# tar the files into an uncompressed archive (sed to skip the . entry)
+		# tar the files into an uncompressed archive (sed skips the . entry)
 		find . | sed 1d | tar -cvf "${curr}/${pkg_name}.tar" -T -
 		cd "$curr" && rm -r "$tempdir"
 		# do the normal steps of gathering dependency files
 		temp=$(mktemp) || exit 1
-		# skip getting the files of the main pkg,
+		# skip getting the files of the main package
 		# since those would have been in the .pkg
 		get_files "$temp" "$pkg_name" skip
 		tar -rvf "${pkg_name}.tar" -T "$temp"
